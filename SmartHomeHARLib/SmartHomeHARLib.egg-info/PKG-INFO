@@ -1,0 +1,11 @@
+Metadata-Version: 2.1
+Name: SmartHomeHARLib
+Version: 0.1
+Summary: SmartHomeHARLib is a Human Activity Recognition Lib from Smart Home Datasets
+Author: Damien Bouchabou
+Author-email: damien.bouchabou@gmail.com
+License: GPL License
+Keywords: human activity recognition,home-automation
+Platform: any
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
