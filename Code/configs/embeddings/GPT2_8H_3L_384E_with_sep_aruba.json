@@ -1,0 +1,18 @@
+{
+    "name": "pretrain_embedding_with_sep",
+    "encoding": "basic_raw",
+    "model_type": "GPT2_8H_3L_384E_SEP",
+    "embedding_size": 384,
+    "num_heads": 8,
+    "num_layers": 3,
+    "dropout": 0.2,
+    "activation": "relu",
+    "normalize_first": true,
+    "bloc_size": 1024,
+    "stride": 512,
+    "epoch_number": 1000,
+    "batch_size": 8,
+    "patience": 20,
+    "verbose": true,
+    "word_dict": "datasets/aruba_train_gpt_with_sep_dict_vocabulary.json"
+}

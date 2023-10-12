@@ -1,0 +1,17 @@
+{
+    "name": "pretrain_embedding",
+    "encoding": "basic_raw",
+    "model_type": "GPT2_12H_6L_384E",
+    "embedding_size": 384,
+    "num_heads": 12,
+    "num_layers": 6,
+    "dropout": 0.2,
+    "activation": "relu",
+    "normalize_first": true,
+    "bloc_size": 1024,
+    "stride": 512,
+    "epoch_number": 1000,
+    "batch_size": 8,
+    "patience": 20,
+    "verbose": true
+}
