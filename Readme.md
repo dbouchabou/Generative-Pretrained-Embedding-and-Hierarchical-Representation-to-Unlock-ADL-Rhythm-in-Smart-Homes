@@ -2,7 +2,7 @@
 
 Welcome to the official GitHub repository for the scientific article titled "Generative Pretrained Embedding and Hierarchical Representation to Unlock Human Rhythm in Activities of Daily Living". This repository contains the code, figures, and additional resources related to our research.
 
-![GPTHAR Neural Network Architecture](Figures/gpthar_architecture.pdf)
+![GPTHAR Neural Network Architecture](Figures/gpthar_architecture.jpg)
 
 ## Abstract
 Our research presents a novel approach to understanding human rhythm in daily activities using the Generative Pretrained Embedding and Hierarchical Representation (GPTHAR) method. Through this, we seek to unlock new dimensions in activity recognition and bring forward a nuanced model that accommodates various real-world scenarios.
