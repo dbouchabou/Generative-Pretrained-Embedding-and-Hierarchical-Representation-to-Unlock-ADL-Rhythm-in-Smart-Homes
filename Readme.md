@@ -8,7 +8,7 @@ Welcome to the official GitHub repository for our article titled "Generative Pre
 Our research presents a novel approach to understanding human rhythm in daily activities using the Generative Pretrained Embedding and Hierarchical Representation (GPTHAR) method. Through this, we seek to unlock new dimensions in activity recognition and bring forward a nuanced model that accommodates various real-world scenarios.
 
 ## Datasets
-To assess the robustness and versatility of our approach, we utilized the following datasets from the [CASAS collection](https://casas.wsu.edu/datasets/)
+To assess the robustness and versatility of our approach, we utilized the following datasets from the [CASAS collection](https://casas.wsu.edu/datasets/):
 
 - **Aruba Dataset**: A dataset used to validate our model's proficiency in scenarios with a single resident.
 - **Milan Dataset**: Used to probe the robustness of our model in the face of potential disturbances caused by pets or sensor issues.
@@ -26,12 +26,16 @@ All these datasets are part of the CASAS collection, and they originate from the
 | Number of Days        | 219       | 82        | 56        |
 
 
-## Results
-Our proposed GPTHAR algorithm showed significant improvements over existing methods. The results will be updated soon.
+### Results from Final Test Set
 
-| Method          | Metric 1 (%) | Metric 2 (%) | ... |
-|-----------------|--------------|--------------|-----|
-| Existing Method | xx.x         | xx.x         | ... |
-| GPTHAR          | xx.x         | xx.x         | ... |
+|                               | **Aruba**        | **Aruba (std)** | **Milan**        | **Milan (std)** | **Cairo**        | **Cairo (std)** |
+|-------------------------------|------------------|-----------------|------------------|-----------------|------------------|-----------------|
+| **ELMoAR (Window 60)**        | 84.76%           | 0.32            | 68.51%           | 1.02            | 69.12%           | 1.76            |
+| **GPTAR (8 Heads 3 Layers)**  | 85.18%           | **0.22**        | 68.55%           | **1.00**        | 73.33%           | 2.08            |
+| **ELMoHAR**                   | 88.22%           | 3.79            | 73.91%           | 1.31            | 74.75%           | 1.98            |
+| **GPTHAR**                    | 88.55%           | 3.83            | 76.87%           | 1.61            | 83.60%           | 1.90            |
+| **ELMoHAR + Time encoding**   | 89.71%           | 0.69            | 77.84%           | 3.24            | 81.87%           | 2.26            |
+| **GPTHAR + Time encoding**    | **90.10%**       | 1.05            | **79.22%**       | 1.27            | **86.74%**       | **1.16**        |
+
 
 ## Installation
