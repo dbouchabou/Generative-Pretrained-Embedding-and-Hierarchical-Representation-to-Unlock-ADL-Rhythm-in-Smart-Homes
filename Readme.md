@@ -112,7 +112,7 @@ cd Code
 Use the following command to initiate the training process:
 
 ```bash
-python classification_train.py --d cairo --e gpt_bi_lstm --c configs/cairo_bi_lstm_gpt2_8H_3L_384E.json --n 10 --cv true
+python classification_train.py --d cairo --e gpt_bi_lstm --c configs/cairo_bi_lstm_gpt2_8H_3L_384E.json --n 10 --cv True
 ```
 
 **Parameters**:
@@ -133,5 +133,5 @@ cd Code
 Use the following command to initiate the training process:
 
 ```bash
-python classification_train.py --d cairo --e gpt_bi_lstm --c configs/cairo_bi_lstm_gpt2_8H_3L_384E.json --n 10 --cv false
+python classification_train.py --d cairo --e gpt_bi_lstm --c configs/cairo_bi_lstm_gpt2_8H_3L_384E.json --n 10 --cv False
 ```
