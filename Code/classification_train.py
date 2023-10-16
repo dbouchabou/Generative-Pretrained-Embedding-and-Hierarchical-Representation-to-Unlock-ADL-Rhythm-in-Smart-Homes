@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 from utils import *
 
-from experiments.embedding_pre_trained.gpt.GPTBiLSTMHierarchyHourV5Experiment2 import (
-    GPTBiLSTMHierarchyHourV5Experiment2,
-)
+
 from experiments.embedding_pre_trained.gpt.GPTBiLSTMContextExperiment2 import (
     GPTBiLSTMContextExperiment2,
 )
@@ -13,44 +11,18 @@ from experiments.embedding_pre_trained.gpt.GPTBiLSTMSEPExperiment2 import (
 from experiments.embedding_pre_trained.gpt.GPTBiLSTMHierarchyExperiment2 import (
     GPTBiLSTMHierarchyExperiment2,
 )
-from experiments.embedding_pre_trained.gpt.GPTBiLSTMHierarchyFrozenExperiment2 import (
-    GPTBiLSTMHierarchyFrozenExperiment2,
-)
+
 from experiments.embedding_pre_trained.gpt.GPTBiLSTMHierarchyHourExperiment2 import (
     GPTBiLSTMHierarchyHourExperiment2,
 )
-from experiments.embedding_pre_trained.gpt.GPTBiLSTMHierarchyHourMinutesExperiment2 import (
-    GPTBiLSTMHierarchyHourMinutesExperiment2,
-)
-from experiments.embedding_pre_trained.gpt.GPTBiLSTMHierarchyHourMinutesSecondsExperiment2 import (
-    GPTBiLSTMHierarchyHourMinutesSecondsExperiment2,
-)
-from experiments.embedding_pre_trained.gpt.GPTBiLSTMHierarchyHourWeekdayExperiment2 import (
-    GPTBiLSTMHierarchyHourWeekdayExperiment2,
-)
-from experiments.embedding_pre_trained.gpt.GPTBiLSTMHourINTEGRATEDExperiment2 import (
-    GPTBiLSTMHourINTEGRATEDExperiment2,
-)
-from experiments.embedding_pre_trained.gpt.GPTBiLSTMExperiment3 import (
-    GPTBiLSTMExperiment3,
-)
 from experiments.embedding_pre_trained.gpt.GPTBiLSTMExperiment2 import (
     GPTBiLSTMExperiment2,
-)
-from experiments.embedding_pre_trained.gpt.GPTBiLSTMExperiment import (
-    GPTBiLSTMExperiment,
-)
-from experiments.embedding_pre_trained.elmo.ELMoBiLSTMHierarchyFrozenExperiment import (
-    ELMoBiLSTMHierarchyFrozenExperiment,
 )
 from experiments.embedding_pre_trained.elmo.ELMoBiLSTMHierarchyExperiment import (
     ELMoBiLSTMHierarchyExperiment,
 )
 from experiments.embedding_pre_trained.elmo.ELMoBiLSTMHierarchyHourExperiment import (
     ELMoBiLSTMHierarchyHourExperiment,
-)
-from experiments.embedding_pre_trained.elmo.ELMoBiLSTMHierarchyHourMinutesExperiment import (
-    ELMoBiLSTMHierarchyHourMinutesExperiment,
 )
 from experiments.embedding_pre_trained.elmo.ELMoBiLSTMExperiment import (
     ELMoBiLSTMExperiment,
@@ -59,23 +31,13 @@ from experiments.embedding_pre_trained.elmo.ELMoBiLSTMContextExperiment import (
     ELMoBiLSTMContextExperiment,
 )
 
-from experiments.embedding_pre_trained.gpt.GPTLSTMBiLSTMExperiment import (
-    GPTLSTMBiLSTMExperiment,
-)
-
-
-from experiments.comparison.LiciottiBiLSTMExperiment import LiciottiBiLSTMExperiment
 import os
 import json
 import argparse
 import numpy as np
-import pandas as pd
-import copy
-import pickle
 import random as rn
 
 import tensorflow as tf
-from tensorflow import keras
 
 
 SEED = 7
@@ -89,12 +51,6 @@ tf.random.set_seed(SEED)
 np.random.seed(SEED)
 # Fix the random seed for random module
 rn.seed(SEED)
-
-
-# Enable mixed precision, which will speed up training by running most of our computations with 16 bit (instead of 32 bit) floating point numbers.
-
-# policy = keras.mixed_precision.Policy("mixed_float16")
-# keras.mixed_precision.set_global_policy(policy)
 
 
 def load_config(config_path):
@@ -252,30 +208,22 @@ if __name__ == "__main__":
         for i in range(nb_run):
             print("\nRUN = {}/{}\n".format(i + 1, nb_run))
 
-            if experiment == "liciotti_bi_lstm":
-                exp = LiciottiBiLSTMExperiment(data, train_x, config)
-
-            elif experiment == "elmo_bi_lstm":
-                exp = ELMoBiLSTMExperiment(data, train_x, test_x, config, cross_val)
+            if experiment == "elmo_bi_lstm":
+                exp = ELMoBiLSTMExperiment(
+                    data, train_x, test_x, config, cross_val)
 
             elif experiment == "gpt_bi_lstm":
-                exp = GPTBiLSTMExperiment2(data, train_x, test_x, config, cross_val)
+                exp = GPTBiLSTMExperiment2(
+                    data, train_x, test_x, config, cross_val)
 
             elif experiment == "elmo_bi_lstm_hierarchy":
                 exp = ELMoBiLSTMHierarchyExperiment(
                     data, train_x, test_x, config, cross_val
                 )
-
-            elif experiment == "elmo_bi_lstm_hierarchy_frozen":
-                exp = ELMoBiLSTMHierarchyFrozenExperiment(data, train_x, config)
-
             elif experiment == "elmo_bi_lstm_hierarchy_hour":
                 exp = ELMoBiLSTMHierarchyHourExperiment(
                     data, train_x, test_x, config, cross_val
                 )
-
-            elif experiment == "elmo_bi_lstm_hierarchy_hour_minutes":
-                exp = ELMoBiLSTMHierarchyHourMinutesExperiment(data, train_x, config)
             elif experiment == "elmo_bi_lstm_context":
                 exp = ELMoBiLSTMContextExperiment(
                     data, train_x, test_x, config, cross_val
@@ -285,37 +233,17 @@ if __name__ == "__main__":
                 exp = GPTBiLSTMHierarchyExperiment2(
                     data, train_x, test_x, config, cross_val
                 )
-
-            elif experiment == "gpt_bi_lstm_hierarchy_frozen":
-                exp = GPTBiLSTMHierarchyFrozenExperiment2(data, train_x, config)
-
             elif experiment == "gpt_bi_lstm_hierarchy_hour":
                 exp = GPTBiLSTMHierarchyHourExperiment2(
                     data, train_x, test_x, config, cross_val
                 )
-
-            elif experiment == "gpt_bi_lstm_hierarchy_hour_minute":
-                exp = GPTBiLSTMHierarchyHourMinutesExperiment2(data, train_x, config)
-
-            elif experiment == "gpt_bi_lstm_hierarchy_hour_minute_second":
-                exp = GPTBiLSTMHierarchyHourMinutesSecondsExperiment2(
-                    data, train_x, config
-                )
-            elif experiment == "gpt_bi_lstm_hierarchy_hour_weekday":
-                exp = GPTBiLSTMHierarchyHourWeekdayExperiment2(data, train_x, config)
-            elif experiment == "gpt_bi_lstm_hour_integrated":
-                exp = GPTBiLSTMHourINTEGRATEDExperiment2(data, train_x, config)
             elif experiment == "gpt_bi_lstm_sep":
-                exp = GPTBiLSTMSEPExperiment2(data, train_x, test_x, config, cross_val)
+                exp = GPTBiLSTMSEPExperiment2(
+                    data, train_x, test_x, config, cross_val)
             elif experiment == "gpt_bi_lstm_context":
                 exp = GPTBiLSTMContextExperiment2(
                     data, train_x, test_x, config, cross_val
                 )
-            elif experiment == "gpt_bi_lstm_hierarchy_hour_v5":
-                exp = GPTBiLSTMHierarchyHourV5Experiment2(data, train_x, config)
-
-            elif experiment == "gptlstm_bi_lstm":
-                exp = GPTLSTMBiLSTMExperiment(data, train_x, test_x, config, cross_val)
 
             exp.DEBUG = DEBUG_MODE
 
