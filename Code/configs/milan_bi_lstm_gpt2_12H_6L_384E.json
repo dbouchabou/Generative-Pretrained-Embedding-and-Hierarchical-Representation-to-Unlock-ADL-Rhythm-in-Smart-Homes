@@ -1,0 +1,19 @@
+{
+    "name": "results",
+    "encoding": "basic_raw",
+    "segmentation": "EW",
+    "model_type": "Bi_LSTM_GPT_12H_8L_384E",
+    "nb_units": 64,
+    "batch_size": 32,
+    "nb_epochs": 400,
+    "verbose": true,
+    "seed": 7,
+    "nb_splits": 3,
+    "sequence_lenght": 1024,
+    "pre_train_embedding": "pretrain_embedding/GPT2_12H_6L_384E/milan/run_2023_09_13_12_00_38_Dataset_milan_Encoding_basic_raw_WindowsSize_1024_EmbeddingSize_384_BatchSize_8_NbEpochs_1000_Head12_Layers_6_Stride_512/GPT_basic_raw_milan_1024_384_model.h5",
+    "word_dict": "pretrain_embedding/GPT2_12H_6L_384E/milan/run_2023_09_13_12_00_38_Dataset_milan_Encoding_basic_raw_WindowsSize_1024_EmbeddingSize_384_BatchSize_8_NbEpochs_1000_Head12_Layers_6_Stride_512/GPT_basic_raw_milan_1024_384_dict_vocabulary.json",
+    "embedding_parameters": "pretrain_embedding/GPT2_12H_6L_384E/milan/run_2023_09_13_12_00_38_Dataset_milan_Encoding_basic_raw_WindowsSize_1024_EmbeddingSize_384_BatchSize_8_NbEpochs_1000_Head12_Layers_6_Stride_512/experiment_parameters.json",
+    "trainable": false,
+    "patience": 20,
+    "activity_renamed": false
+}
