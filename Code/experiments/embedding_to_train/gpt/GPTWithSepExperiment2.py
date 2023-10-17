@@ -102,7 +102,7 @@ class GPTWithSepExperiment2:
         print(self.train_x_encoded.shape)
         print(self.train_y_encoded.shape)
 
-        input("Press Enter to continue...")
+        # input("Press Enter to continue...")
 
     def create_model(self):
         vocab_size = (
