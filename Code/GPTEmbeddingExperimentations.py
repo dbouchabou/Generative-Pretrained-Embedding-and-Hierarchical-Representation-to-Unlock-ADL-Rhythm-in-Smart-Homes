@@ -12,6 +12,7 @@ import json
 import random as rn
 
 from experiments.embedding_to_train.gpt.GPTExperiment2 import GPTExperiment2
+from experiments.embedding_to_train.gpt.GPTWithSepExperiment2 import GPTWithSepExperiment2
 
 DEBUG_MODE = True
 SEED = 7
@@ -26,11 +27,6 @@ np.random.seed(SEED)
 rn.seed(SEED)
 
 
-
-
-
-
-
 def load_vocabulary(path):
     with open(path) as json_file:
         vocabulary = json.load(json_file)
@@ -41,14 +37,14 @@ def load_vocabulary(path):
 if __name__ == "__main__":
     gpus = tf.config.experimental.list_physical_devices('GPU')
     if gpus:
-       try:
-        # Currently, memory growth needs to be the same across GPUs
-           for gpu in gpus:
-               tf.config.experimental.set_memory_growth(gpu, True)
+        try:
+            # Currently, memory growth needs to be the same across GPUs
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
 
-       except RuntimeError as e:
-        # Memory growth must be set before GPUs have been initialized
-           print(e)
+        except RuntimeError as e:
+            # Memory growth must be set before GPUs have been initialized
+            print(e)
 
     strategy = tf.distribute.MirroredStrategy()
 
@@ -57,10 +53,10 @@ if __name__ == "__main__":
         formatter_class=argparse.RawDescriptionHelpFormatter, description=""
     )
     p.add_argument(
-        "--d", 
-        dest="data", 
-        action="store", 
-        default="", 
+        "--d",
+        dest="data",
+        action="store",
+        default="",
         help="dataset name"
     )
 
@@ -88,8 +84,6 @@ if __name__ == "__main__":
     experiement = str(args.experiment)
     config_path = str(args.config)
 
-    
-
     # Load the config file
     config = load_config(config_path)
 
@@ -100,7 +94,7 @@ if __name__ == "__main__":
 
     with strategy.scope():
 
-        if  experiement == "gpt2":
+        if experiement == "gpt2":
             # Load data
             train_x, train_y = load_train_data_gpt(data)
             exp = GPTExperiment2(data, train_x, train_y, vocab, config)
@@ -109,7 +103,6 @@ if __name__ == "__main__":
             # Load data
             train_x, train_y = load_train_data_gpt_sep(data)
             exp = GPTExperiment2(data, train_x, train_y, vocab, config)
-    
 
         # Save experiment config
         # exp.save_config()
