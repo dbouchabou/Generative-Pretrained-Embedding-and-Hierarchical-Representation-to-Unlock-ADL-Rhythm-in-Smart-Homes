@@ -6,16 +6,14 @@ import csv
 import time
 import json
 import numpy as np
-import h5py
 
 from tqdm import tqdm
 
 from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
-import keras_nlp
+
 import tensorflow as tf
-from tensorflow import keras
 from tensorflow.keras.models import *
 from tensorflow.keras.layers import *
 from tensorflow.keras.utils import *
@@ -25,26 +23,13 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import Tokenizer
 
 
-from SmartHomeHARLib.custom_layers import TokenAndPositionEmbedding
-from SmartHomeHARLib.custom_layers import GPT_Block
-from SmartHomeHARLib.custom_layers import TransformerBlock
-from SmartHomeHARLib.custom_layers.transfomers import padding_attention_mask_3
-
-
 from SmartHomeHARLib.utils import Evaluator
 
 
-def load_config(config_path):
-    f = open(
-        config_path,
-    )
-
-    # returns JSON object as
-    # a dictionary
-    return json.load(f)
+from SmartHomeHARLib.embedding import ELMoEventEmbedder
 
 
-class GPTBiLSTMContextExperiment2:
+class ELMoBiLSTMContextWithSepExperiment:
     def __init__(
         self,
         dataset_name,
@@ -56,34 +41,22 @@ class GPTBiLSTMContextExperiment2:
         super().__init__()
 
         self.experiment_parameters = experiment_parameters
-        self.embedding_parameters = load_config(
-            self.experiment_parameters["embedding_parameters"]
-        )
 
-        self.experiment_tag = "Dataset_{}_Encoding_{}_Segmentation_{}_Batch_{}_Patience_{}_SeqLenght_{}_EmbDim_{}_NbUnits_{}".format(
-            dataset_name,
-            self.experiment_parameters["encoding"],
-            self.experiment_parameters["segmentation"],
-            self.experiment_parameters["batch_size"],
-            self.experiment_parameters["patience"],
-            self.experiment_parameters["sequence_lenght"],
-            self.embedding_parameters["embedding_size"],
-            self.experiment_parameters["nb_units"],
-        )
+        # Embedding
+        self.elmo_model = ELMoEventEmbedder()
+        self.elmo_model.load_model(
+            self.experiment_parameters["pre_train_embedding"])
 
         # General
         self.global_classifier_accuracy = []
         self.global_classifier_balance_accuracy = []
         self.current_time = None
-        self.wordDict = self.load_vocabulay_file(
-            self.experiment_parameters["word_dict"]
-        )
+        self.dataset_name = dataset_name
+        self.wordDict = self.elmo_model.vocabulary
         self.actDict = {}
         self.train_x = train_x
         self.train_y = None
-        self.train_x_encoded = None
-        self.train_y_encoded = None
-        self.dataset_name = dataset_name
+        self.cross_validation = cross_validation
 
         # Classifier
         self.classifier_dataset_encoder = None
@@ -99,19 +72,19 @@ class GPTBiLSTMContextExperiment2:
         self.classifier_data_Y_test = []
         self.classifier_data_X_val = []
         self.classifier_data_Y_val = []
-        self.cross_validation = cross_validation
 
         self.test_x = test_x
 
-        # Fix the random seed for tensorflow
-        tf.random.set_seed(self.experiment_parameters["seed"])
-        # Fix the random seed for numpy
-        np.random.seed(self.experiment_parameters["seed"])
-        # Enable mixed precision, which will speed up training by running most of our computations with 16 bit (instead of 32 bit) floating point numbers.
-
-    def load_vocabulay_file(self, vocab_filename):
-        with open(vocab_filename) as json_file:
-            return json.load(json_file)
+        self.experiment_tag = "Dataset_{}_Encoding_{}_Segmentation_{}_Batch_{}_Patience_{}_SeqLenght_{}_EmbDim_{}_NbUnits_{}".format(
+            self.dataset_name,
+            self.experiment_parameters["encoding"],
+            self.experiment_parameters["segmentation"],
+            self.experiment_parameters["batch_size"],
+            self.experiment_parameters["patience"],
+            self.experiment_parameters["sequence_lenght"],
+            self.elmo_model.embedding_size,
+            self.experiment_parameters["nb_units"],
+        )
 
     def data_preprocessing(self):
         # extract labels
@@ -122,10 +95,14 @@ class GPTBiLSTMContextExperiment2:
         n_1 = self.train_x.input_6.values
         n_0 = self.train_x.input_11.values
 
+        # x_all = n_2 + n_1 + n_0
         x_all = []
 
         for i in tqdm(range(len(n_0))):
-            row = n_2[i] + " " + n_1[i] + " " + n_0[i]
+            # row = n_2[i] + " " + n_1[i] + " " + n_0[i]
+            row = n_2[i] + " <end> <start> " + \
+                n_1[i] + " <end> <start> " + n_0[i]
+            # row = n_2[i] + " <sep> " + n_1[i] + " <sep> " + n_0[i] + " <sep> "
             x_all.append(row)
 
         # encode tokens
@@ -140,11 +117,18 @@ class GPTBiLSTMContextExperiment2:
             tokenizer.texts_to_sequences(x_all), dtype=object)
         x3_encoded = pad_sequences(
             x3_encoded,
-            maxlen=self.experiment_parameters["sequence_lenght"],
+            maxlen=self.experiment_parameters["sequence_lenght"] - 1,
             padding="post",
         )
 
-        self.train_x_encoded = x3_encoded
+        new_input = []
+        for i in tqdm(range(len(x3_encoded))):
+            new_input.append(np.insert(x3_encoded[i], 0, 52))
+
+        new_input = np.array(new_input)
+
+        # self.train_x_encoded = x3_encoded
+        self.train_x_encoded = new_input
 
         # encode labels
 
@@ -170,10 +154,13 @@ class GPTBiLSTMContextExperiment2:
         n_1 = self.test_x.input_6.values
         n_0 = self.test_x.input_11.values
 
+        # x_all = n_2 + n_1 + n_0
         x_all = []
 
         for i in tqdm(range(len(n_0))):
-            row = n_2[i] + " " + n_1[i] + " " + n_0[i]
+            # row = n_2[i] + " " + n_1[i] + " " + n_0[i]
+            # row = n_2[i] + " <end> <start> " + n_1[i] + " <end> <start> " + n_0[i]
+            row = n_2[i] + " <sep> " + n_1[i] + " <sep> " + n_0[i] + " <sep> "
             x_all.append(row)
 
         # encode tokens
@@ -188,11 +175,18 @@ class GPTBiLSTMContextExperiment2:
             tokenizer.texts_to_sequences(x_all), dtype=object)
         x3_encoded = pad_sequences(
             x3_encoded,
-            maxlen=self.experiment_parameters["sequence_lenght"],
+            maxlen=self.experiment_parameters["sequence_lenght"] - 1,
             padding="post",
         )
 
-        self.test_x_encoded = x3_encoded
+        new_input = []
+        for i in tqdm(range(len(x3_encoded))):
+            new_input.append(np.insert(x3_encoded[i], 0, 52))
+
+        new_input = np.array(new_input)
+
+        # self.train_x_encoded = x3_encoded
+        self.test_x_encoded = new_input
 
         # encode labels
 
@@ -280,70 +274,6 @@ class GPTBiLSTMContextExperiment2:
 
                     input("Press Enter to continue...")
 
-    def build_model_classifier(self, run_number=0):
-        nb_timesteps = self.experiment_parameters["sequence_lenght"]
-        nb_classes = len(list(self.actDict.keys()))
-        embed_dim = self.embedding_parameters["embedding_size"]
-        num_heads = self.embedding_parameters["num_heads"]
-        dropout_rate = self.embedding_parameters["dropout"]
-        num_of_layers = self.embedding_parameters["num_layers"]
-        vocab_size = len(list(self.wordDict.keys())) + 1
-        output_dim = self.experiment_parameters["nb_units"]
-
-        if self.DEBUG:
-            print("")
-            print(vocab_size)
-
-            input("Press Enter to continue...")
-
-        # build the model
-
-        # classifier
-        input_model = Input(shape=((nb_timesteps,)))
-
-        # GPT Embedding
-
-        model_base = load_model(
-            self.experiment_parameters["pre_train_embedding"])
-
-        print(model_base.summary())
-
-        new_model_base = tf.keras.Sequential()
-
-        # Embedding and Positional Embedding
-        new_model_base.add(model_base.layers[1])
-        for i in range(2, num_of_layers + 2):
-            new_model_base.add(model_base.layers[i])
-
-        new_model_base.trainable = self.experiment_parameters["trainable"]
-        output_gpt_embedding = new_model_base(
-            input_model, training=self.experiment_parameters["trainable"]
-        )
-
-        print(new_model_base.summary())
-
-        lstm_1 = Bidirectional(LSTM(output_dim))(output_gpt_embedding)
-
-        output_layer = Dense(nb_classes, activation="softmax")(lstm_1)
-
-        self.classifier_model = Model(
-            inputs=input_model, outputs=output_layer, name="GPT_Bi_LSTM"
-        )
-
-        # ceate a picture of the model
-        picture_name = (
-            self.classifier_model.name
-            + "_"
-            + self.experiment_tag
-            + "_"
-            + str(run_number)
-            + ".png"
-        )
-        picture_path = os.path.join(self.experiment_result_path, picture_name)
-
-        plot_model(self.classifier_model,
-                   show_shapes=True, to_file=picture_path)
-
     def train(
         self, X_train_input, Y_train_input, X_val_input, Y_val_input, run_number=0
     ):
@@ -408,9 +338,6 @@ class GPTBiLSTMContextExperiment2:
             verbose=1,
             save_best_only=True,
         )
-        # mc = ModelCheckpoint(self.classifier_best_model_path,
-        #                     mode='auto', verbose=1, save_best_only=True)
-        # mc = ModelCheckpoint(self.classifier_best_model_path, monitor = 'val_loss', mode = 'min', verbose = 1, save_best_only = True)
 
         # cbs = [csv_logger,tensorboard_cb,mc,es,cm_callback]
         cbs = [csv_logger, tensorboard_cb, mc, es]
@@ -437,6 +364,45 @@ class GPTBiLSTMContextExperiment2:
                 validation_data=(X_val_input, Y_val_input),
                 shuffle=True,
             )
+
+    def build_model_classifier(self, run_number=0):
+        nb_timesteps = self.experiment_parameters["sequence_lenght"]
+        nb_classes = len(list(self.actDict.keys()))
+        output_dim = self.experiment_parameters["nb_units"]
+
+        # build the model
+
+        # create embedding layer
+        elmo_embedding_layer = self.elmo_model.get_elmo_embedding_layer(
+            embedding_type=self.experiment_parameters["elmo_output"], trainable=False
+        )
+
+        # classifier
+        input_model = Input(shape=((nb_timesteps,)))
+
+        tokens_embedding = elmo_embedding_layer(input_model)
+
+        lstm_1 = Bidirectional(LSTM(output_dim))(tokens_embedding)
+
+        output_layer = Dense(nb_classes, activation="softmax")(lstm_1)
+
+        self.classifier_model = Model(
+            inputs=input_model, outputs=output_layer, name="ELMo_BiLSTM_Classifier"
+        )
+
+        # ceate a picture of the model
+        picture_name = (
+            self.classifier_model.name
+            + "_"
+            + self.experiment_tag
+            + "_"
+            + str(run_number)
+            + ".png"
+        )
+        picture_path = os.path.join(self.experiment_result_path, picture_name)
+
+        plot_model(self.classifier_model,
+                   show_shapes=True, to_file=picture_path)
 
     def check_input_model(self, run_number=0):
         X_val_input = []
@@ -523,7 +489,6 @@ class GPTBiLSTMContextExperiment2:
     def compile_model(self):
         self.classifier_model.compile(
             loss="sparse_categorical_crossentropy",
-            # optimizer = tf.keras.optimizers.Adam(learning_rate=cyclical_learning_rate),
             optimizer=tf.keras.optimizers.Adam(),
             metrics=["sparse_categorical_accuracy"],
         )
@@ -540,8 +505,9 @@ class GPTBiLSTMContextExperiment2:
             print(self.classifier_best_model_path)
             input("Press Enter to continue...")
 
-        evaluator = Evaluator(X_test_input, Y_test_input,
-                              model=self.classifier_model)
+        evaluator = Evaluator(
+            X_test_input, Y_test_input, model_path=self.classifier_best_model_path
+        )
 
         evaluator.simpleEvaluation(
             self.experiment_parameters["batch_size"], Y_test_input=Y_test_input

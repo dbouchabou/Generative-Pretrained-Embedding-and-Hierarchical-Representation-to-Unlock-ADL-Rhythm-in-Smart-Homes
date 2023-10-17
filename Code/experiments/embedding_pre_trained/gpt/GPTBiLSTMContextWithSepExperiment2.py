@@ -34,45 +34,6 @@ from SmartHomeHARLib.custom_layers.transfomers import padding_attention_mask_3
 from SmartHomeHARLib.utils import Evaluator
 
 
-def isGroup(obj):
-    if isinstance(obj, h5py.Group):
-        return True
-
-    return False
-
-
-def isDataset(obj):
-    if isinstance(obj, h5py.Dataset):
-        return True
-
-    return False
-
-
-def getDatasetFromGroup(datasets, obj):
-    if isGroup(obj):
-        for key in obj:
-            x = obj[key]
-            getDatasetFromGroup(datasets, x)
-    else:
-        datasets.append(obj)
-
-
-def getWeightsForLayer(layerName, fileName):
-    weights = []
-    with h5py.File(fileName, mode="r") as f:
-        model = f["/model_weights"]
-        for key in model:
-            if layerName in key:
-                obj = model[key]
-                datasets = []
-                getDatasetFromGroup(datasets, obj)
-
-                for dataset in datasets:
-                    w = np.array(dataset)
-                    weights.append(w)
-    return weights
-
-
 def load_config(config_path):
     f = open(
         config_path,
@@ -83,7 +44,7 @@ def load_config(config_path):
     return json.load(f)
 
 
-class GPTBiLSTMSEPExperiment2:
+class GPTBiLSTMContextWithSepExperiment2:
     def __init__(
         self,
         dataset_name,
@@ -123,7 +84,6 @@ class GPTBiLSTMSEPExperiment2:
         self.train_x_encoded = None
         self.train_y_encoded = None
         self.dataset_name = dataset_name
-        self.cross_validation = cross_validation
 
         # Classifier
         self.classifier_dataset_encoder = None
@@ -139,6 +99,7 @@ class GPTBiLSTMSEPExperiment2:
         self.classifier_data_Y_test = []
         self.classifier_data_X_val = []
         self.classifier_data_Y_val = []
+        self.cross_validation = cross_validation
 
         self.test_x = test_x
 
@@ -161,22 +122,10 @@ class GPTBiLSTMSEPExperiment2:
         n_1 = self.train_x.input_6.values
         n_0 = self.train_x.input_11.values
 
-        # x_all = n_2 + n_1 + n_0
         x_all = []
 
         for i in tqdm(range(len(n_0))):
-            # row = (
-            #    "<Start> "
-            #    + n_2[i]
-            #    + " <End> <Start> "
-            #    + n_1[i]
-            #    + " <End> <Start> "
-            #    + n_0[i]
-            #    + " <End>"
-            # )
-
-            # row = " <SEP>" + n_2[i] + " <SEP>" + n_1[i] + " <SEP>" + n_0[i] + " <SEP>"
-            row = n_2[i] + " <SEP>" + n_1[i] + " <SEP>" + n_0[i] + " <SEP>"
+            row = n_2[i] + " <SEP> " + n_1[i] + " <SEP> " + n_0[i]
             x_all.append(row)
 
         # encode tokens
@@ -187,29 +136,15 @@ class GPTBiLSTMSEPExperiment2:
 
         # replace words into sentences by their index token
 
-        x3_encoded = np.array(tokenizer.texts_to_sequences(x_all), dtype=object)
+        x3_encoded = np.array(
+            tokenizer.texts_to_sequences(x_all), dtype=object)
         x3_encoded = pad_sequences(
             x3_encoded,
-            maxlen=self.experiment_parameters["sequence_lenght"] - 1,
-            # maxlen=self.experiment_parameters["sequence_lenght"],
+            maxlen=self.experiment_parameters["sequence_lenght"],
             padding="post",
         )
 
-        new_sequences = []
-
-        for seq in x3_encoded:
-            new_sequences.append(np.insert(seq, 0, self.wordDict["<endoftext>"]))
-
-        new_sequences = np.array(new_sequences)
-
-        # self.train_x_encoded = x3_encoded
-        self.train_x_encoded = new_sequences
-
-        # print(x_all[1])
-        # print(len(x_all[1].split()))
-        # print(self.train_x_encoded[0])
-
-        # input("Press Enter to continue...")
+        self.train_x_encoded = x3_encoded
 
         # encode labels
 
@@ -235,22 +170,10 @@ class GPTBiLSTMSEPExperiment2:
         n_1 = self.test_x.input_6.values
         n_0 = self.test_x.input_11.values
 
-        # x_all = n_2 + n_1 + n_0
         x_all = []
 
         for i in tqdm(range(len(n_0))):
-            # row = (
-            #    "<Start> "
-            #    + n_2[i]
-            #    + " <End> <Start> "
-            #    + n_1[i]
-            #    + " <End> <Start> "
-            #    + n_0[i]
-            #    + " <End>"
-            # )
-
-            # row = " <SEP>" + n_2[i] + " <SEP>" + n_1[i] + " <SEP>" + n_0[i] + " <SEP>"
-            row = n_2[i] + " <SEP>" + n_1[i] + " <SEP>" + n_0[i] + " <SEP>"
+            row = n_2[i] + " <SEP> " + n_1[i] + " <SEP> " + n_0[i]
             x_all.append(row)
 
         # encode tokens
@@ -261,29 +184,15 @@ class GPTBiLSTMSEPExperiment2:
 
         # replace words into sentences by their index token
 
-        x3_encoded = np.array(tokenizer.texts_to_sequences(x_all), dtype=object)
+        x3_encoded = np.array(
+            tokenizer.texts_to_sequences(x_all), dtype=object)
         x3_encoded = pad_sequences(
             x3_encoded,
-            maxlen=self.experiment_parameters["sequence_lenght"] - 1,
-            # maxlen=self.experiment_parameters["sequence_lenght"],
+            maxlen=self.experiment_parameters["sequence_lenght"],
             padding="post",
         )
 
-        new_sequences = []
-
-        for seq in x3_encoded:
-            new_sequences.append(np.insert(seq, 0, self.wordDict["<endoftext>"]))
-
-        new_sequences = np.array(new_sequences)
-
-        # self.train_x_encoded = x3_encoded
-        self.test_x_encoded = new_sequences
-
-        # print(x_all[1])
-        # print(len(x_all[1].split()))
-        # print(self.train_x_encoded[0])
-
-        # input("Press Enter to continue...")
+        self.test_x_encoded = x3_encoded
 
         # encode labels
 
@@ -320,11 +229,15 @@ class GPTBiLSTMSEPExperiment2:
 
                 pbar.update(1)
 
-                self.classifier_data_X_train = np.array(self.classifier_data_X_train)
-                self.classifier_data_Y_train = np.array(self.classifier_data_Y_train)
+                self.classifier_data_X_train = np.array(
+                    self.classifier_data_X_train)
+                self.classifier_data_Y_train = np.array(
+                    self.classifier_data_Y_train)
 
-                self.classifier_data_X_test = np.array(self.classifier_data_X_test)
-                self.classifier_data_Y_test = np.array(self.classifier_data_Y_test)
+                self.classifier_data_X_test = np.array(
+                    self.classifier_data_X_test)
+                self.classifier_data_Y_test = np.array(
+                    self.classifier_data_Y_test)
                 pbar.update(1)
 
                 if self.DEBUG:
@@ -390,27 +303,15 @@ class GPTBiLSTMSEPExperiment2:
 
         # GPT Embedding
 
-        # model_base = load_model(self.experiment_parameters["pre_train_embedding"], custom_objects={
-        #    "TokenAndPositionEmbedding": keras_nlp.layers.TokenAndPositionEmbedding,
-        #    # "TokenAndPositionEmbedding": TokenAndPositionEmbedding,
-        #    "TransformerDecoder": keras_nlp.layers.TransformerDecoder,
-        #    "Perplexity": keras_nlp.metrics.Perplexity})
-
-        model_base = load_model(self.experiment_parameters["pre_train_embedding"])
+        model_base = load_model(
+            self.experiment_parameters["pre_train_embedding"])
 
         print(model_base.summary())
 
         new_model_base = tf.keras.Sequential()
-        # new_model_base.add(model_base.layers[0])
-        # new_model_base.add(model_base.layers[1])
-        # new_model_base.add(model_base.layers[2])
-        # new_model_base.add(model_base.layers[3])
-        # new_model_base.add(model_base.layers[4])
-        # new_model_base.add(model_base.layers[5])
-        # new_model_base.add(model_base.layers[6])
-        # new_model_base.add(model_base.layers[7])
 
-        new_model_base.add(model_base.layers[1])  # Embedding and Positional Embedding
+        # Embedding and Positional Embedding
+        new_model_base.add(model_base.layers[1])
         for i in range(2, num_of_layers + 2):
             new_model_base.add(model_base.layers[i])
 
@@ -421,38 +322,9 @@ class GPTBiLSTMSEPExperiment2:
 
         print(new_model_base.summary())
 
-        # gpt_embedding = model_base.layers[1](input_model,trainable=self.experiment_parameters["trainable"])
-        # gpt_embedding = model_base.layers[2](trainable=self.experiment_parameters["trainable"])(gpt_embedding)
-        # gpt_embedding = model_base.layers[3](trainable=self.experiment_parameters["trainable"])(gpt_embedding)
-        # output_gpt_embedding = model_base.layers[4](trainable=self.experiment_parameters["trainable"])(gpt_embedding)
-
-        # output_gpt_embedding = LayerNormalization(epsilon=1e-5)(output_gpt_embedding)
-
-        # encoder = keras_nlp.layers.TransformerEncoder(
-        #     intermediate_dim=embed_dim * 4,
-        #     num_heads=num_heads,
-        #     dropout=dropout_rate,
-        #     activation="relu",
-        # )
-        # output_gpt_embedding = encoder(output_gpt_embedding)
-
-        # output_gpt_embedding = LayerNormalization(epsilon=1e-5)(output_gpt_embedding)
-
-        lstm_1 = Bidirectional(
-            LSTM(
-                output_dim,
-                # return_sequences=True,
-            )
-        )(output_gpt_embedding)
-        # lstm_1 = Bidirectional(LSTM(int(output_dim / 2)))(lstm_1)
-        # lstm_1 = GlobalAveragePooling1D()(output_gpt_embedding)
-        # lstm_1 = Flatten()(lstm_1)
-        # lstm_1 = Dense(output_dim, activation="softmax")(lstm_1)
+        lstm_1 = Bidirectional(LSTM(output_dim))(output_gpt_embedding)
 
         output_layer = Dense(nb_classes, activation="softmax")(lstm_1)
-
-        # self.classifier_model = Model(
-        #    inputs=input_model, outputs=output_layer, name="GPT_Bi_LSTM_NORM")
 
         self.classifier_model = Model(
             inputs=input_model, outputs=output_layer, name="GPT_Bi_LSTM"
@@ -469,14 +341,16 @@ class GPTBiLSTMSEPExperiment2:
         )
         picture_path = os.path.join(self.experiment_result_path, picture_name)
 
-        plot_model(self.classifier_model, show_shapes=True, to_file=picture_path)
+        plot_model(self.classifier_model,
+                   show_shapes=True, to_file=picture_path)
 
     def train(
         self, X_train_input, Y_train_input, X_val_input, Y_val_input, run_number=0
     ):
         root_logdir = os.path.join(
             self.experiment_parameters["name"],
-            "logs_{}_{}".format(self.experiment_parameters["name"], self.dataset_name),
+            "logs_{}_{}".format(
+                self.experiment_parameters["name"], self.dataset_name),
         )
 
         run_id = (
@@ -666,7 +540,8 @@ class GPTBiLSTMSEPExperiment2:
             print(self.classifier_best_model_path)
             input("Press Enter to continue...")
 
-        evaluator = Evaluator(X_test_input, Y_test_input, model=self.classifier_model)
+        evaluator = Evaluator(X_test_input, Y_test_input,
+                              model=self.classifier_model)
 
         evaluator.simpleEvaluation(
             self.experiment_parameters["batch_size"], Y_test_input=Y_test_input
@@ -702,7 +577,8 @@ class GPTBiLSTMSEPExperiment2:
             + str(run_number)
             + ".csv"
         )
-        confusion_path = os.path.join(self.experiment_result_path, confusion_name)
+        confusion_path = os.path.join(
+            self.experiment_result_path, confusion_name)
         evaluator.saveConfusionMatrix(confusion_path)
 
         evaluator.balanceAccuracyCompute()
@@ -770,7 +646,8 @@ class GPTBiLSTMSEPExperiment2:
 
     def save_word_dict(self):
         word_dict_name = "wordDict.json"
-        word_dict_path = os.path.join(self.experiment_result_path, word_dict_name)
+        word_dict_path = os.path.join(
+            self.experiment_result_path, word_dict_name)
 
         self.__save_dict_to_json(word_dict_path, self.wordDict)
 
@@ -788,7 +665,8 @@ class GPTBiLSTMSEPExperiment2:
             self.experiment_result_path, experiment_parameters_name
         )
 
-        self.__save_dict_to_json(experiment_parameters_path, self.experiment_parameters)
+        self.__save_dict_to_json(
+            experiment_parameters_path, self.experiment_parameters)
 
     def save_metrics(self):
         csv_name = (
@@ -818,5 +696,6 @@ class GPTBiLSTMSEPExperiment2:
             for val2 in self.global_classifier_balance_accuracy:
                 writer.writerow([val2 * 100])
             writer.writerow([])
-            writer.writerow([np.mean(self.global_classifier_balance_accuracy) * 100])
+            writer.writerow(
+                [np.mean(self.global_classifier_balance_accuracy) * 100])
             writer.writerow([np.std(self.global_classifier_balance_accuracy)])
