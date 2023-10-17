@@ -4,7 +4,7 @@
     "segmentation": "EW",
     "model_type": "Bi_LSTM_GPT_8H_3L_384E_HIERARCHY",
     "nb_units": 64,
-    "batch_size": 32,
+    "batch_size": 64,
     "nb_epochs": 400,
     "verbose": true,
     "seed": 7,
