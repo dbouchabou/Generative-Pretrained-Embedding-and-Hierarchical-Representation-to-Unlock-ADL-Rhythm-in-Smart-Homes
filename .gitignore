@@ -1,3 +1,4 @@
 Code/results/*
 Code/datasets/*
 Code/pretrain_embedding/*
+Code/__pycache__/*
