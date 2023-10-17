@@ -102,7 +102,7 @@ if __name__ == "__main__":
         elif experiement == "gpt2_sep":
             # Load data
             train_x, train_y = load_train_data_gpt_sep(data)
-            exp = GPTExperiment2(data, train_x, train_y, vocab, config)
+            exp = GPTWithSepExperiment2(data, train_x, train_y, vocab, config)
 
         # Save experiment config
         # exp.save_config()
