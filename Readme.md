@@ -120,7 +120,19 @@ python classification_train.py --d cairo --e GPTAR --c configs/GPTAR/cairo_bi_ls
 - `--e`: Specifies the experiment type. For instance, `GPTAR` represents using the GPT pretrained embedding combined with a bi-directional LSTM classifier architecture.
 - `--c`: Path to the configuration files containing the experiment parameters.
 - `--n`:  Determines the number of times the experiment should be repeated.
-- `--cv`: Determines the experiment mode. When set to `true`, the experiment employs cross-validation. If not, the algorithm uses the full training set for training and the test set for validation. Defaults to `true`.
+- `--cv`: Determines the experiment mode. When set to `True`, the experiment employs cross-validation. If not, the algorithm uses the full training set for training and the test set for validation. Defaults to `True`.
+
+**Experiments List**:
+- `ELMoAR`: ELMo pretrained embedding paired with a bi-directional LSTM classifier architecture.
+- `GPTAR`:  GPT pretrained embedding paired with a bi-directional LSTM classifier architecture.
+- `ELMoHAR`: Hierarchical ELMo pretrained embedding structure paired with a bi-directional LSTM classifier architecture.
+- `GPTHAR`:  Hierarchical GPT pretrained embedding structure paired with a bi-directional LSTM classifier architecture.
+- `ELMoAR_H`: Hierarchical ELMo pretrained embedding structure with Time encoding, paired with a bi-directional LSTM classifier architecture.
+- `GPTAR_H`: Hierarchical GPT pretrained embedding structure with Time encoding, paired with a bi-directional LSTM classifier architecture.
+- `ELMoAR_C`: retrained embedding paired with a bi-directional LSTM classifier architecture, employing an extended context window that includes the two preceding activity sequences.
+- `GPTAR_C`: GPT pretrained embedding paired with a bi-directional LSTM classifier architecture, employing an extended context window that includes the two preceding activity sequences.
+- `ELMoAR_C_S`:   ELMo pretrained embedding paired with a bi-directional LSTM classifier architecture, using an extended context window that captures the two preceding activity sequences. Activity sequences are distinguished by a unique separator token.
+- `GPTAR_C_S`: GPT pretrained embedding paired with a bi-directional LSTM classifier architecture, using an extended context window that captures the two preceding activity sequences. Activity sequences are distinguished by a unique separator token.
 
 
 4. **Execute Final Test Experiments**
