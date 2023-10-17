@@ -1,0 +1,19 @@
+{
+    "name": "results",
+    "encoding": "basic_raw",
+    "segmentation": "EW",
+    "model_type": "Bi_LSTM_ELMO_60",
+    "elmo_output": "concat",
+    "emb_dim": 64,
+    "nb_units": 64,
+    "batch_size": 64,
+    "nb_epochs": 400,
+    "verbose": true,
+    "seed": 7,
+    "nb_splits": 3,
+    "sequence_lenght": 1024,
+    "pre_train_embedding": "pretrain_embedding/ELMo/milan/run__2023_07_21_20_41_58_Dataset_milan_Encoding_basic_raw_WindowsSize_60_EmbeddingSize_64_NbEpochs_400/model_6_basic_raw_milan_60_64_backward",
+    "output_embedding_layer_nomalized": false,
+    "patience": 20,
+    "activity_renamed": false
+}
