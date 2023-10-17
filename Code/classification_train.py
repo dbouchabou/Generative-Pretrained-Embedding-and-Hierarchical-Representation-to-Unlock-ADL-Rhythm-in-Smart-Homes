@@ -5,8 +5,8 @@ from utils import *
 from experiments.embedding_pre_trained.gpt.GPTBiLSTMContextExperiment2 import (
     GPTBiLSTMContextExperiment2,
 )
-from experiments.embedding_pre_trained.gpt.GPTBiLSTMSEPExperiment2 import (
-    GPTBiLSTMSEPExperiment2,
+from experiments.embedding_pre_trained.gpt.GPTBiLSTMContextWithSepExperiment2 import (
+    GPTBiLSTMContextWithSepExperiment2,
 )
 from experiments.embedding_pre_trained.gpt.GPTBiLSTMHierarchyExperiment2 import (
     GPTBiLSTMHierarchyExperiment2,
@@ -30,6 +30,10 @@ from experiments.embedding_pre_trained.elmo.ELMoBiLSTMExperiment import (
 from experiments.embedding_pre_trained.elmo.ELMoBiLSTMContextExperiment import (
     ELMoBiLSTMContextExperiment,
 )
+from experiments.embedding_pre_trained.elmo.ELMoBiLSTMContextWithSepExperiment import (
+    ELMoBiLSTMContextWithSepExperiment,
+)
+
 
 import os
 import json
@@ -210,39 +214,42 @@ if __name__ == "__main__":
         for i in range(nb_run):
             print("\nRUN = {}/{}\n".format(i + 1, nb_run))
 
-            if experiment == "elmo_bi_lstm":
+            if experiment == "ELMoAR":
                 exp = ELMoBiLSTMExperiment(
                     data, train_x, test_x, config, cross_val)
 
-            elif experiment == "gpt_bi_lstm":
+            elif experiment == "GPTAR":
                 exp = GPTBiLSTMExperiment2(
                     data, train_x, test_x, config, cross_val)
 
-            elif experiment == "elmo_bi_lstm_hierarchy":
+            elif experiment == "ELMoHAR":
                 exp = ELMoBiLSTMHierarchyExperiment(
                     data, train_x, test_x, config, cross_val
                 )
-            elif experiment == "elmo_bi_lstm_hierarchy_hour":
+            elif experiment == "ELMoHAR_H":
                 exp = ELMoBiLSTMHierarchyHourExperiment(
                     data, train_x, test_x, config, cross_val
                 )
-            elif experiment == "elmo_bi_lstm_context":
+            elif experiment == "ELMoAR_C":
                 exp = ELMoBiLSTMContextExperiment(
                     data, train_x, test_x, config, cross_val
                 )
-
-            elif experiment == "gpt_bi_lstm_hierarchy":
+            elif experiment == "ELMoAR_C_S":
+                exp = ELMoBiLSTMContextWithSepExperiment(
+                    data, train_x, test_x, config, cross_val
+                )
+            elif experiment == "GPTHAR":
                 exp = GPTBiLSTMHierarchyExperiment2(
                     data, train_x, test_x, config, cross_val
                 )
-            elif experiment == "gpt_bi_lstm_hierarchy_hour":
+            elif experiment == "GPTHAR_H":
                 exp = GPTBiLSTMHierarchyHourExperiment2(
                     data, train_x, test_x, config, cross_val
                 )
-            elif experiment == "gpt_bi_lstm_sep":
-                exp = GPTBiLSTMSEPExperiment2(
+            elif experiment == "GPTAR_C_S":
+                exp = GPTBiLSTMContextWithSepExperiment2(
                     data, train_x, test_x, config, cross_val)
-            elif experiment == "gpt_bi_lstm_context":
+            elif experiment == "GPTAR_C":
                 exp = GPTBiLSTMContextExperiment2(
                     data, train_x, test_x, config, cross_val
                 )
