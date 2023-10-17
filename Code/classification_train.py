@@ -52,6 +52,8 @@ np.random.seed(SEED)
 # Fix the random seed for random module
 rn.seed(SEED)
 
+tf.keras.utils.set_random_seed(SEED)
+
 
 def load_config(config_path):
     f = open(
