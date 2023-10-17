@@ -112,12 +112,12 @@ cd Code
 Use the following command to initiate the training process:
 
 ```bash
-python classification_train.py --d cairo --e gpt_bi_lstm --c configs/cairo_bi_lstm_gpt2_8H_3L_384E.json --n 10 --cv True
+python classification_train.py --d cairo --e GPTAR --c configs/GPTAR/cairo_bi_lstm_gpt2_8H_3L_384E.json --n 10 --cv True
 ```
 
 **Parameters**:
 - `--d`: Dataset selection (e.g., aruba, milan, cairo).
-- `--e`: Specifies the experiment type. For instance, `gpt_bi_lstm` represents using the GPT pretrained embedding combined with a bi-directional LSTM classifier architecture.
+- `--e`: Specifies the experiment type. For instance, `GPTAR` represents using the GPT pretrained embedding combined with a bi-directional LSTM classifier architecture.
 - `--c`: Path to the configuration files containing the experiment parameters.
 - `--n`:  Determines the number of times the experiment should be repeated.
 - `--cv`: Determines the experiment mode. When set to `true`, the experiment employs cross-validation. If not, the algorithm uses the full training set for training and the test set for validation. Defaults to `true`.
@@ -133,5 +133,5 @@ cd Code
 Use the following command to initiate the training process:
 
 ```bash
-python classification_train.py --d cairo --e gpt_bi_lstm --c configs/cairo_bi_lstm_gpt2_8H_3L_384E.json --n 10 --cv False
+python classification_train.py --d cairo --e GPTAR --c configs/GPTAR/cairo_bi_lstm_gpt2_8H_3L_384E.json --n 10 --cv False
 ```
